@@ -1,0 +1,87 @@
+/*
+  PAGE TRANSITION
+  ---------------
+  When you click a link, the browser takes a screenshot of the old page and
+  the new page, then animates the two screenshots with the keyframes below.
+
+  - ::view-transition-old(.page-exit)  = screenshot of the page you are leaving
+  - ::view-transition-new(.page-enter) = screenshot of the page you are going to
+
+  Every var(--page-...) value comes from `pageTransition` in
+  animations/config.ts. Change the numbers there, not here.
+*/
+
+/* ---------- Old page ---------- */
+
+::view-transition-old(.page-exit) {
+  animation: page-out var(--page-exit-duration) var(--page-ease) both;
+}
+
+@keyframes page-out {
+  0% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+    filter: blur(0px);
+  }
+  40% {
+    transform: translate(0, 0) rotate(0deg) scale(var(--page-exit-mid-scale));
+    opacity: var(--page-exit-mid-opacity);
+  }
+  100% {
+    transform: translate(var(--page-exit-x), var(--page-exit-y))
+      rotate(var(--page-exit-rotate)) scale(var(--page-exit-scale));
+    opacity: var(--page-exit-opacity);
+    filter: blur(var(--page-exit-blur));
+  }
+}
+
+/* ---------- New page ---------- */
+
+::view-transition-new(.page-enter) {
+  animation: page-in var(--page-enter-duration) var(--page-ease)
+    var(--page-enter-delay) both;
+}
+
+@keyframes page-in {
+  from {
+    transform: translate(var(--page-enter-x), var(--page-enter-y));
+    clip-path: var(--page-enter-clip);
+  }
+  to {
+    transform: translate(0, 0);
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+
+/* ---------- Navbar stays still ---------- */
+
+/* The navbar has viewTransitionName: "navbar" (see components/Navbar.tsx),
+   so it gets its own layer that we keep frozen above the moving pages. */
+::view-transition-group(navbar) {
+  animation: none;
+  z-index: 100;
+}
+
+::view-transition-old(navbar) {
+  display: none;
+}
+
+::view-transition-new(navbar) {
+  animation: none;
+}
+
+/* Let clicks reach the real page while the animation is playing */
+::view-transition {
+  pointer-events: none;
+}
+
+/* ---------- Accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}
